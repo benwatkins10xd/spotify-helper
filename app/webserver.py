@@ -1,15 +1,19 @@
 import base64
 import os
+from time import sleep
 from fastapi import FastAPI, HTTPException
 from typing import Optional
-
 import requests
+from datetime import datetime
 
-app = FastAPI()
 
+# these come from passing --env-file to uvicorn
 REDIRECT_URI = os.environ.get("REDIRECT_URI")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 CLIENT_ID = os.environ.get("CLIENT_ID")
+
+
+app = FastAPI()
 
 
 @app.get("/")
@@ -19,6 +23,7 @@ async def root():
 
 @app.get("/callback")
 async def callback(code: Optional[str] = None, error: Optional[str] = None):
+
     if error is not None:
         # something like access denied
         raise HTTPException(status_code=400, detail=error)
@@ -41,6 +46,13 @@ async def callback(code: Optional[str] = None, error: Optional[str] = None):
     resp = requests.post(url=token_url, data=body, headers=headers)
 
     if not resp.status_code == 200:
-        resp.raise_for_status()
+        raise HTTPException(status_code=400, detail=resp.json())
+
+    # save the access_token to a file in the project dir
+    timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+
+    sleep(5)
+    with open(f"access-token-{timestamp}", "w") as fh:
+        fh.write(resp.json()["access_token"])
 
     return {**resp.json()}
