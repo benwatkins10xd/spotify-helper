@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "spotify-helper"
+version = "0.1.0"
+description = ""
+authors = ["Ben Watkins"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.31.0"
+fastapi = "^0.110.0"
+uvicorn = "^0.29.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
