@@ -39,7 +39,7 @@ All installed!
 
 ## Running
 
-1. With the virtual environment activated, run `uvicorn app.webserver:app --reload --port 8123 --env-file=.env`.
+1. With the virtual environment activated, run `uvicorn spotifyhelper.webserver:app --reload --port 8123 --env-file=.env`.
 2. This will start the uvicorn webserver and search for incoming requests.
 3. Then, run one of the scripts in the `scripts/` directory to use the actual functions, e.g. `python3 scripts/get_playlists.py`
 
