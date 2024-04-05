@@ -33,7 +33,7 @@ REDIRECT_URI=http://localhost:8123/callback" > .env
 
 9. Activate the virtual environment: `source venv/bin/activate` or `./venv/Scripts/Activate` for Windows
 
-10. Install dependencies: `poetry install`
+10. Install dependencies and spotify-helper: `poetry install`
 
 All installed!
 
@@ -41,8 +41,9 @@ All installed!
 
 1. With the virtual environment activated, run `uvicorn app.webserver:app --reload --port 8123 --env-file=.env`.
 2. This will start the uvicorn webserver and search for incoming requests.
-3. Then, run one of the scripts in the `app/` directory to use the actual app, e.g. `python3 app/get_playlists.py`
+3. Then, run one of the scripts in the `scripts/` directory to use the actual functions, e.g. `python3 scripts/get_playlists.py`
 
 ## TODO
 
+- Use argparse or similar rather than python3 scripts/get...
 - Separate installation instructions for windows and mac/unix

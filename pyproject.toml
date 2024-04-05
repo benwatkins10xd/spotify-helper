@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "spotify-helper"
+name = "spotifyhelper"
 version = "0.1.0"
-description = ""
+description = "Useful stuff for Spotify"
 authors = ["Ben Watkins"]
 readme = "README.md"
 
@@ -13,5 +13,5 @@ uvicorn = "^0.29.0"
 python-dotenv = "^1.0.1"
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
