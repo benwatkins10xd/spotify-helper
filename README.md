@@ -46,4 +46,5 @@ All installed!
 ## TODO
 
 - Use argparse or similar rather than python3 scripts/get...
+- Can we start the fastapi & uvicorn server only when we need to make an auth request? Might save a lot of hassle setting everything up.
 - Separate installation instructions for windows and mac/unix
