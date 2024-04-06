@@ -2,6 +2,7 @@
 
 import math
 import sys
+from typing import Any
 import requests
 import html
 import os
@@ -9,36 +10,34 @@ from dotenv import load_dotenv
 import curses
 
 from spotifyhelper.auth import get_current_user, handle_authentication
-from spotifyhelper.colours import bcolours
+from spotifyhelper.structs import Colours, PlaylistString
 
 
 def create_playlist_string_with_ansi_colours(playlist: dict) -> str:
+    """Unused method"""
     name = playlist["name"]
     description = playlist["description"]
     total_tracks = playlist["tracks"]["total"]
-    complete_string = f"{bcolours.OKGREEN}Playlist:{bcolours.ENDC} {name} -- {bcolours.OKCYAN}{total_tracks}{bcolours.ENDC} tracks -- "
+    complete_string = f"{Colours.OKGREEN}Playlist:{Colours.ENDC} {name} -- {Colours.OKCYAN}{total_tracks}{Colours.ENDC} tracks -- "
 
     if description:
         complete_string += f"{html.unescape(description)}"
     else:
-        complete_string += f"{bcolours.OKBLUE}No description found.{bcolours.ENDC}"
+        complete_string += f"{Colours.OKBLUE}No description found.{Colours.ENDC}"
     return complete_string
 
 
-def create_playlist_string(playlist: dict) -> str:
+def create_playlist_string(playlist: dict) -> PlaylistString:
     name = playlist["name"]
     description = playlist["description"]
     total_tracks = playlist["tracks"]["total"]
-    complete_string = f"Playlist: {name} -- {total_tracks} tracks -- "
 
-    if description:
-        complete_string += f"{html.unescape(description)}"
-    else:
-        complete_string += f"No description found."
-    return complete_string
+    return PlaylistString(name=name, tracks=total_tracks, description=description)
 
 
-def print_playlists(playlists_dict: dict, paginated: bool = False) -> None:
+def print_playlists(
+    playlists_dict: dict, paginated: bool = False
+) -> list[PlaylistString]:
     formatted_playlists = []
     if not paginated:
         for playlist in playlists_dict["items"]:
@@ -46,14 +45,13 @@ def print_playlists(playlists_dict: dict, paginated: bool = False) -> None:
         return formatted_playlists
 
     for page in playlists_dict.keys():
-        print(f"{bcolours.OKCYAN}{page}{bcolours.ENDC}")
         for playlist in playlists_dict[page]["items"]:
             formatted_playlists.append(create_playlist_string(playlist=playlist))
 
     return formatted_playlists
 
 
-def get_playlist_strings(access_token: str, user_id: str):
+def get_playlist_strings(access_token: str, user_id: str) -> list[PlaylistString]:
     """
     Print all playlists that a user has.
 
@@ -90,38 +88,50 @@ def get_playlist_strings(access_token: str, user_id: str):
 #     response = requests.get(url)
 
 
-def print_loading(screen, status: str = "Loading..."):
-    screen.clear()
-    h, w = screen.getmaxyx()
+def print_loading(stdscr: Any, status: str = "Loading..."):
+    stdscr.clear()
+    h, w = stdscr.getmaxyx()
     x = w // 2 - len(status) // 2
     y = h // 2
-    screen.addstr(y, x, status)
+    stdscr.addstr(y, x, status)
 
 
-def print_menu(screen, selected_row, playlists):
-    screen.clear()
-    h, w = screen.getmaxyx()
+def print_menu(stdscr: Any, selected_row: int, playlists: list[PlaylistString]):
+    stdscr.clear()
+    h, w = stdscr.getmaxyx()
+    curses.start_color()
+    curses.init_pair(2, curses.COLOR_BLUE, curses.COLOR_BLACK)
 
     for idx, playlist in enumerate(playlists):
-        x = w // 2 - len(playlist) // 2
+        formatted_string = f"Playlist: {playlist.name} -- {playlist.description} -- "
+        tracks_string = f"Tracks: {playlist.tracks}"
+
+        x = w // 2 - len(formatted_string + tracks_string) // 2
         y = h // 2 - len(playlists) // 2 + idx
+
         if idx == selected_row:
-            screen.attron(curses.color_pair(1))
-            screen.addstr(y, x, playlist)
-            screen.attroff(curses.color_pair(1))
+            stdscr.attron(curses.color_pair(1))
+            stdscr.addstr(y, x, formatted_string)
+            stdscr.addstr(tracks_string, curses.color_pair(2))
+            stdscr.attroff(curses.color_pair(1))
         else:
-            screen.addstr(y, x, playlist)
+            stdscr.addstr(y, x, formatted_string)
+            stdscr.addstr(tracks_string, curses.color_pair(2))
 
     title = "spotify-helper"
     help_text = "Use arrow keys to navigate and escape to exit."
     x_title = w // 2 - len(title) // 2
     x_help_text = w // 2 - len(help_text) // 2
-    screen.addstr(0, x_title, title)
-    screen.addstr(1, x_help_text, help_text)
-    screen.refresh()
+    stdscr.addstr(0, x_title, title)
+    stdscr.addstr(1, x_help_text, help_text)
+    stdscr.refresh()
+
+    # TODO: left align the playlists maybe?
+    # also need to format them a bit nicer
+    # also need to handle pages. maybe do max 10 per page?
 
 
-def create_app(screen):
+def create_app(stdscr: Any):
     load_dotenv()
     client_id = os.environ.get("CLIENT_ID")
     client_secret = os.environ.get("CLIENT_SECRET")
@@ -129,7 +139,7 @@ def create_app(screen):
 
     curses.curs_set(0)
     curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
-    print_loading(screen)
+    print_loading(stdscr)
 
     access_token = handle_authentication(
         client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
@@ -140,10 +150,10 @@ def create_app(screen):
     playlist_strings = get_playlist_strings(access_token=access_token, user_id=user_id)
 
     current_row = 0
-    print_menu(screen, current_row, playlist_strings)
+    print_menu(stdscr, current_row, playlist_strings)
 
     while True:
-        key = screen.getch()
+        key = stdscr.getch()
 
         if key == curses.KEY_UP and current_row > 0:
             current_row -= 1
@@ -151,11 +161,11 @@ def create_app(screen):
             current_row += 1
         elif key == curses.KEY_ENTER or key in [10, 13]:
             # Handle selection (e.g., print selected playlist)
-            screen.clear()
-            screen.addstr(0, 0, f"Selected playlist: {playlist_strings[current_row]}")
-            screen.refresh()
+            stdscr.clear()
+            stdscr.addstr(0, 0, f"Selected playlist: {playlist_strings[current_row]}")
+            stdscr.refresh()
 
-        print_menu(screen, current_row, playlist_strings)
+        print_menu(stdscr, current_row, playlist_strings)
 
         if key == 27:  # escape
             sys.exit(0)
