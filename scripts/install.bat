@@ -2,11 +2,11 @@
 
 echo Welcome to spotify-helper. Let's get set up:
 
-call :prompt_input "Enter your client_id: " client_id
-call :prompt_input "Enter your client_secret: " client_secret
+set /p "client_id=Enter your client_id: "
+set /p "client_secret=Enter your client_secret: "
 
-echo CLIENT_ID=!client_id! > .env
-echo CLIENT_SECRET=!client_secret! >> .env
+echo CLIENT_ID=%client_id% > .env
+echo CLIENT_SECRET=%client_secret% >> .env
 REM this shouldn't change otherwise stuff will break
 echo REDIRECT_URI=http://localhost:8123/callback >> .env
 
@@ -18,13 +18,11 @@ call venv\Scripts\activate
 py -m pip install poetry
 py -m poetry install
 
-echo Installation complete - now activate your venv and run 'spotifyhelper'.
-echo call venv\Scripts\activate && spotifyhelper
-goto :eof
-
-:prompt_input
-set /p input=%1
-if not defined input (
-    echo Input cannot be empty. Please try again.
-    goto prompt_input
+if %errorlevel% neq 0 (
+    echo Installation failed. Check you have python installed correctly
+    exit /b %errorlevel%
 )
+
+echo Installation complete - now activate your venv and run 'spotifyhelper'.
+echo "call venv\Scripts\activate && spotifyhelper"
+goto :eof
