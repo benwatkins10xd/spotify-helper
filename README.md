@@ -9,7 +9,7 @@
 
 ## Prerequisites
 
-- Python >=3.9
+- Python >=3.9 (NOTE: if you're using Windows then use >=3.9 and <=3.11)
 - Git
 - Poetry (`pip install poetry`)
 - Spotify account (obviously)
@@ -30,13 +30,21 @@
 git clone https://github.com/benwatkins10xd/spotify-helper.git
 ```
 
-2. Change into project directory and run the install script. It will prompt you for your client ID and secret you created above:
+2. Change into project directory and run the install script for your operating system. It will prompt you for your client ID and secret you created above.
+
+### macOS and Linux (and Windows Git bash)
 
 ```shell
 cd spotify-helper && bash scripts/install.sh
 ```
 
-Run `spotifyhelper` to get started.
+### Windows command prompt
+
+```shell
+cd spotify-helper && scripts\install.bat
+```
+
+Activate your virtual environment and run `spotifyhelper` to get started.
 
 ## TODO
 
