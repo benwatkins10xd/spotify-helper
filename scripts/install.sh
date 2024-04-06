@@ -43,8 +43,9 @@ if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
 fi
 
 # otherwise create venv and install deps as normal
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
+pip install poetry
 poetry install
 
 if [ $? -ne 0 ]; then
@@ -53,5 +54,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "All installed. Run 'spotifyhelper' to get started."
+echo "Installation complete - now activate your venv and run 'spotifyhelper'."
+echo "source venv/bin/activate && spotifyhelper"
 exit 0
