@@ -9,6 +9,7 @@ from typing import Optional
 from urllib.parse import urlparse
 import webbrowser
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from requests import PreparedRequest
 import requests
 import uvicorn
@@ -79,7 +80,9 @@ def start_backend(
         return {"message": "Hola mundo"}
 
     @app.get("/callback")
-    async def callback(code: Optional[str] = None, error: Optional[str] = None):
+    async def callback(
+        code: Optional[str] = None, error: Optional[str] = None
+    ) -> HTMLResponse:
 
         if error is not None:
             # something like access denied
@@ -112,7 +115,37 @@ def start_backend(
         with open(f"access-token-{timestamp}", "w") as fh:
             fh.write(resp.json()["access_token"])
 
-        return {**resp.json()}
+        html_content = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Hello FastAPI</title>
+            <style>
+                body {
+                    background-color: #2b2b2b;
+                    color: #ffffff;
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                }
+                .main {
+                    text-align: center;
+                }
+                a {
+                    text-decoration: underline;
+                    color: #ffffff;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="main">
+                <h1>Hello spotify-helper user!</h1>
+                <p>You're logged in successfully and it's safe to close this window.</p>
+                <a href="https://github.com/benwatkins10xd">Visit my GitHub</a>
+            </div>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content)
 
     def start_uvicorn():
         parsed_uri = urlparse(redirect_uri)
