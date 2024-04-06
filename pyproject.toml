@@ -12,6 +12,9 @@ fastapi = "^0.110.0"
 uvicorn = "^0.29.0"
 python-dotenv = "^1.0.1"
 
+[tool.poetry.scripts]
+spotifyhelper = "spotifyhelper.main:main"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

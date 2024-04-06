@@ -121,7 +121,7 @@ def print_menu(screen, selected_row, playlists):
     screen.refresh()
 
 
-def main(screen):
+def create_app(screen):
     load_dotenv()
     client_id = os.environ.get("CLIENT_ID")
     client_secret = os.environ.get("CLIENT_SECRET")
@@ -161,9 +161,9 @@ def main(screen):
             sys.exit(0)
 
 
-if __name__ == "__main__":
+def main():
     try:
-        curses.wrapper(main)
+        curses.wrapper(create_app)
     except curses.error as e:
         print("Terminal is too small. Try again with a larger terminal")
         print(e)
