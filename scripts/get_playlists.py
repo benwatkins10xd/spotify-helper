@@ -1,6 +1,7 @@
 """Script to get all playlists."""
 
 import math
+import sys
 import requests
 import html
 import os
@@ -89,6 +90,14 @@ def get_playlist_strings(access_token: str, user_id: str):
 #     response = requests.get(url)
 
 
+def print_loading(screen, status: str = "Loading..."):
+    screen.clear()
+    h, w = screen.getmaxyx()
+    x = w // 2 - len(status) // 2
+    y = h // 2
+    screen.addstr(y, x, status)
+
+
 def print_menu(screen, selected_row, playlists):
     screen.clear()
     h, w = screen.getmaxyx()
@@ -115,16 +124,20 @@ def print_menu(screen, selected_row, playlists):
 def main(screen):
     load_dotenv()
     client_id = os.environ.get("CLIENT_ID")
+    client_secret = os.environ.get("CLIENT_SECRET")
     redirect_uri = os.environ.get("REDIRECT_URI")
 
-    access_token = handle_authentication(client_id=client_id, redirect_uri=redirect_uri)
+    curses.curs_set(0)
+    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
+    print_loading(screen)
+
+    access_token = handle_authentication(
+        client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
+    )
     user_response = get_current_user(access_token=access_token)
 
     user_id = user_response.json()["id"]
     playlist_strings = get_playlist_strings(access_token=access_token, user_id=user_id)
-
-    curses.curs_set(0)
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_WHITE)
 
     current_row = 0
     print_menu(screen, current_row, playlist_strings)
@@ -144,9 +157,14 @@ def main(screen):
 
         print_menu(screen, current_row, playlist_strings)
 
-        if key == 27:  # Escape key to exit
-            break
+        if key == 27:  # escape
+            sys.exit(0)
 
 
 if __name__ == "__main__":
-    curses.wrapper(main)
+    try:
+        curses.wrapper(main)
+    except curses.error as e:
+        print("Terminal is too small. Try again with a larger terminal")
+        print(e)
+        sys.exit(1)
