@@ -14,35 +14,6 @@ import requests
 import uvicorn
 
 
-class UvicornStoppableThread(threading.Thread):
-    """Thread class with a _stop() method.
-    The thread itself has to check
-    regularly for the stopped() condition."""
-
-    def __init__(self, *args, app: FastAPI, redirect_uri: str, **kwargs):
-        super(UvicornStoppableThread, self).__init__(*args, **kwargs)
-        self._stop = threading.Event()
-        self.app = app
-        self.redirect_uri = redirect_uri
-
-    # function using _stop function
-    def stop(self):
-        self._stop.set()
-
-    def stopped(self):
-        return self._stop.isSet()
-
-    def run(self):
-        parsed_uri = urlparse(self.redirect_uri)
-        while uvicorn.run(
-            self.app, port=parsed_uri.port, env_file=".env", log_level="critical"
-        ):
-            if self.stopped():
-                return
-            print("Hello, world!")
-            time.sleep(1)
-
-
 def watch_directory_for_files(regex_pattern: re.Pattern) -> str:
     """
     Watch the project directory for files
@@ -143,7 +114,14 @@ def start_backend(
 
         return {**resp.json()}
 
-    uvicorn_thread = UvicornStoppableThread(app=app, redirect_uri=redirect_uri)
+    def start_uvicorn():
+        parsed_uri = urlparse(redirect_uri)
+        uvicorn.run(app, port=parsed_uri.port, env_file=".env", log_level="critical")
+
+    uvicorn_thread = threading.Thread(target=start_uvicorn)
+    # make the thread a daemon so it runs in background
+    # this took an hour to figure out :)
+    uvicorn_thread.daemon = True
     uvicorn_thread.start()
     return uvicorn_thread
 
@@ -160,10 +138,12 @@ def create_access_token(
     backend_thread = start_backend(
         client_id=client_id, client_secret=client_secret, redirect_uri=redirect_uri
     )
+
     backend_starting = True
     retry_counter = 0
     # shouldn't take longer than 5 sec
     max_retries = 5
+
     # check it's responding by pinging it every sec
     while backend_starting:
         if retry_counter >= max_retries:
@@ -184,11 +164,9 @@ def create_access_token(
             retry_counter += 1
 
     send_auth_request(client_id=client_id, redirect_uri=redirect_uri)
+
     # we wait here until we get a new access_token file
     file_path = watch_directory_for_files(file_regex)
-    # stop the backend running
-    backend_thread.stop()
-    backend_thread.join()
     with open(file_path, "r") as fh:
         return fh.read()
 
