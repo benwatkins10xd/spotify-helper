@@ -2,9 +2,13 @@ import html
 
 
 class PlaylistString:
-    def __init__(self, name: str, tracks: int, description: str) -> None:
+    def __init__(
+        self, name: str, tracks: int, description: str, href: str, open_link: str
+    ) -> None:
         self.name = name
         self.tracks = tracks
+        self.href = href
+        self.open_link = open_link
         if not description:
             self.description = "No description found"
         else:

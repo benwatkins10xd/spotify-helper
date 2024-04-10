@@ -119,7 +119,7 @@ def start_backend(
         <!DOCTYPE html>
         <html>
         <head>
-            <title>Hello FastAPI</title>
+            <title>Spotify Helper Auth</title>
             <style>
                 body {
                     background-color: #2b2b2b;
