@@ -48,7 +48,9 @@ Activate your virtual environment and run `spotifyhelper` to get started.
 
 ## TODO
 
-- Return some HTML in the fastapi app to instruct user to close the browser window or if possible automatically close it when authenticated? idk man
-- Separate installation instructions for windows and mac/unix
 - Test suite
-- More functionality it's useless at the moment lmao
+- Create txt file with all songs in playlist
+- Create playlist using this txt file
+- CRUD operations on playlists?
+- Do same with albums?
+- Be nice to have a nice task bar at the top with the time, current menu etc. something like spotify-helper > playlists > playlist_name
